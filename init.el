@@ -204,10 +204,12 @@
 ;; Yasnippet: Snippet expander
 (use-package yasnippet
   :ensure t
+  :bind ("C-c s" . yas-insert-snippet)
+  :functions custom/skel
   :init
   (add-hook 'term-mode-hook '(lambda () (yas-minor-mode -1)))
-  :config
   (yas-global-mode 1)
+  :config
   (add-to-list 'yas-prompt-functions 'custom/helm-prompt))
 
 ;; Use helm to display snippets for yasnippet
@@ -236,16 +238,12 @@
 (auto-insert-mode)
 ;(setq auto-insert-query nil)
 
-;; Custom function for expanding yasnippets
+;; Custom function for expanding yasnippets for auto-insert skeletons
 (defun custom/skel()
   (yas-expand-snippet (buffer-string) (point-min) (point-max)))
 
 ;; File extension associations
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(auto-insert (quote other))
  '(auto-insert-alist
    (quote
@@ -344,7 +342,7 @@
   :bind (:map c-mode-base-map
               ("M-." . rtags-find-symbol-at-point)
               ("M-," . rtags-find-references-at-point))
-  :config
+  :init
   (setq rtags-autostart-diagnostics t)
   (rtags-diagnostics)
   (setq rtags-completions-enabled t)
@@ -358,7 +356,7 @@
 (use-package cmake-ide
   :ensure t
   :bind ("<f8>" . cmake-ide-compile)
-  :config
+  :init
   (cmake-ide-setup))
 
 ;; PEP8 reading of python files
