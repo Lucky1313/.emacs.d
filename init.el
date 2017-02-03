@@ -41,6 +41,15 @@
   :ensure t
   :mode "/var/log.*\\'"
   :interpreter "syslog")
+(use-package arduino-mode
+  :ensure t
+  :mode "\\.ino\\'"
+  :interpreter "arduino")
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.yml\\'"
+  :interpreter "yaml")
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GENERAL EMACS SETTINGS ;;
@@ -167,6 +176,7 @@
   (setq org-log-done t
         org-directory "~/org"
         org-support-shift-select t
+        org-startup-truncated t 
         org-modules
         '(org-bibtex
           org-habit
