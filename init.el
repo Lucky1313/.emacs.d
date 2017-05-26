@@ -176,9 +176,11 @@
   (setq org-log-done t
         org-directory "~/org"
         org-support-shift-select t
-        org-startup-truncated t 
+        org-startup-truncated t
+        org-startup-folded "showeverything"
         org-modules
-        '(org-bibtex
+        '(org-babel
+          org-bibtex
           org-habit
           org-checklist
           org-depend
@@ -192,7 +194,20 @@
           ("DONE" :foreground "forest green" :weight bold)
           ("WAITING" :foreground "orange" :weight bold)
           ("HOLD" :foreground "magenta" :weight bold)
-          ("CANCELLED" :foreground "forest green" :weight bold))))
+          ("CANCELLED" :foreground "forest green" :weight bold)))
+  ;; Ditaa Drawing in Org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((ditaa . t)))
+
+  (defun my-org-confirm-babel-evaluate (lang body)
+    (not (string= lang "ditaa")))
+  
+  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate
+        org-ditaa-jar-path "/usr/bin/ditaa"))
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; TEMPLATE PACKAGES ;;
@@ -382,3 +397,4 @@
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
+
