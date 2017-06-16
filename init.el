@@ -9,9 +9,7 @@
 (package-initialize)
 
 ;; Autoinstall use-package
-(unless (package-installed-p 'use-package)
-	(package-refresh-contents) (package-install 'use-package))
-
+(when (not (package-installed-p 'use-package)) (package-refresh-contents) (package-install 'use-package))
 (require 'use-package)
 
 ;; Theme
@@ -107,6 +105,17 @@
 (delete-selection-mode t)
 (transient-mark-mode t)
 
+(setq cc-other-file-alist
+      '(("\\.c"   (".h"))
+       ("\\.cpp"   (".h"))
+       ("\\.h"   (".c"".cpp"))
+       ("\\.hpp" (".cpp"))))
+
+(setq ff-search-directories
+      '("." "../src" "../include"))
+
+(global-set-key (kbd "M-t") 'ff-find-other-file)
+
 ;;;;;;;;;;;;;;;;;;;;;
 ;; GLOBAL PACKAGES ;;
 ;;;;;;;;;;;;;;;;;;;;;
@@ -137,6 +146,7 @@
   :ensure t
   :init
   (helm-mode 1)
+  (setq helm-split-window-in-side-p t)
   :bind (("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)))
 
@@ -347,7 +357,8 @@
 (use-package company
   :ensure t
   :init
-  (add-hook 'prog-mode-hook 'company-mode))
+  (add-hook 'prog-mode-hook 'company-mode)
+  (setq company-idle-delay 0))
 
 (use-package company-c-headers
   :ensure t
@@ -375,8 +386,10 @@
   (rtags-enable-standard-keybindings))
 
 ;; Rtags helm integration
-(require 'rtags-helm)
-(setq rtags-use-helm t)
+(use-package helm-rtags
+  :ensure t
+  :init
+  (setq rtags-use-helm t))
 
 (use-package cmake-ide
   :ensure t
