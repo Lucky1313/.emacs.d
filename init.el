@@ -73,8 +73,8 @@
 (add-hook 'prog-mode-hook
           (lambda () (local-set-key (kbd "RET") 'newline-and-indent)))
 
-;; Switch between header and source file
-(global-set-key (kbd "C-x C-h") 'ff-find-other-file)
+;; Keybinding to open init.el
+(global-set-key (kbd "<f9>") (lambda() (interactive)(find-file "~/.emacs.d/init.el")))
 
 ;; Set tab width
 (setq-default tab-width 2
@@ -118,6 +118,10 @@
   :ensure t
   :mode "\\.yml\\'"
   :interpreter "yaml")
+(use-package glsl-mode
+  :ensure t
+  :mode ("\\.vert\\'" "\\.frag\\'" "\\.glsl\\'" "\\.geom\\'")
+  :interpreter "glsl")
 
 (setq cc-other-file-alist
       '(("\\.c"   (".h"))
@@ -129,6 +133,18 @@
       '("." "../src" "../include"))
 
 (global-set-key (kbd "M-t") 'ff-find-other-file)
+
+;; Open .h files as C++
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+
+;; Toggle between C and C++ mode-line
+(defun cpp-mode-toggle ()
+  "toggles between c-mode and c++-mode"
+  (interactive)
+  (cond ((string= major-mode "c-mode")
+         (c++-mode))
+        ((string= major-mode "c++-mode")
+         (c-mode))))
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; GLOBAL PACKAGES ;;
@@ -318,30 +334,73 @@
   (add-hook 'prog-mode-hook 'company-mode)
   (setq company-idle-delay 0))
 
-(use-package company-c-headers
+;; Company-Statistics: Suggest most used completions first
+(use-package company-statistics
+  :ensure t
+  :init
+  (add-hook 'company-mode-hook 'company-statistics-mode))
+
+;; Company-Quickhelp: Add information about completions
+(use-package company-quickhelp
+  :ensure t
+  :init
+  (add-hook 'company-mode-hook 'company-quickhelp-mode))
+
+;; ;; Company-C-Headers: Add c headers for autocompletion
+;; (use-package company-c-headers
+;;   :ensure t
+;;   :config
+;;   (add-to-list 'company-backends 'company-c-headers))
+
+;; Add cmake autocompletion
+(use-package company-cmake
   :ensure t
   :config
-  (add-to-list 'company-backends 'company-c-headers))
+  (add-to-list 'company-backends 'company-cmake))
 
-;; Autocomplete, used for backend only
-;; (use-package auto-complete
-;;   :ensure t)
+;; Irony: Autocomplete engine
+(use-package irony
+  :ensure t
+  :init
+  (add-hook 'c-mode-common-hook 'irony-mode)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
 
-;; (use-package auto-complete-clang
-;;   :ensure t)
+;; Company-Irony: Use Irony as backend for company
+(use-package company-irony
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-irony)
+  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands))
+
+;; Add c headers to irony
+(use-package company-irony-c-headers
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-irony-c-headers))
+
+;; Add Irony as backend for flymake
+(use-package flycheck-irony
+  :ensure t
+  :config
+  (add-hook 'flychek-mode-hook #'flycheck-irony-setup))
 
 ;; Rtags: C/C++ Indexing
 (use-package rtags
   :ensure t
   :bind (:map c-mode-base-map
               ("M-." . rtags-find-symbol-at-point)
-              ("M-," . rtags-find-references-at-point))
+              ("M-," . rtags-find-references-at-point)
+              ("M-/" . rtags-find-symbol))
   :init
   (setq rtags-autostart-diagnostics t)
   (rtags-diagnostics)
-  (setq rtags-completions-enabled t)
-  (push 'company-rtags company-backends)
+  ;; (setq rtags-completions-enabled t)
+  ;; (push 'company-rtags company-backends)
   (rtags-enable-standard-keybindings))
+
+;; Flycheck RTags
+(use-package flycheck-rtags
+  :ensure t)
 
 ;; Rtags helm integration
 (use-package helm-rtags
@@ -356,25 +415,6 @@
   :init
   (cmake-ide-setup))
 
-;; Py-Autopep8: Auto pep8 format python
-(use-package py-autopep8
-  :ensure t
-  :init
-  (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
-
-;; LaTeX processing
-(use-package tex-mik
-  :ensure auctex
-  :init
-  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
-
-;; Use default style for formatting
-(defun custom/clang-format-default ()
-  (interactive)
-  (clang-format-buffer custom/clang-style))
-
 ;; Load clang format file into string to be put
 ;; in the -style={} argument
 ;; Cannot handle all options (Multipart options)
@@ -386,6 +426,11 @@
            (replace-regexp-in-string ",[ ]*\.\.\.[ ,]*$" "}"
             (replace-regexp-in-string "[ ]*\n[ ]*" ", " (buffer-string)))))))
 
+;; Use default style for formatting
+(defun custom/clang-format-default ()
+  (interactive)
+  (clang-format-buffer custom/clang-style))
+
 ;; Clang format: Autoformat C/C++ with clang-format
 (use-package clang-format
   :ensure t
@@ -395,22 +440,33 @@
   :bind (:map c-mode-base-map
               ("M-f" . custom/clang-format-default)))
 
+;; Py-Autopep8: Auto pep8 format python
+(use-package py-autopep8
+  :ensure t
+  :init
+  (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
+
+;; Python autocomplete
+(use-package company-jedi
+  :ensure t
+  :init
+  (setq jedi:environment-virtualenv (list (expand-file-name "~/.emacs.d/.python-environments/")))
+  (add-to-list 'company-backends 'company-jedi)
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (setq jedi:complete-on-dot t)
+  (setq jedi:use-shortcuts t))
+
+;; LaTeX processing
+(use-package tex-mik
+  :ensure auctex
+  :init
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
+
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; TEMPLATE PACKAGES ;;
 ;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Skeletor: Create project templates
-(use-package skeletor
-  :ensure t
-  :config
-  (add-to-list 'skeletor-global-substitutions
-               '("__USER-NAME__" . "David Hedin"))
-  (skeletor-define-template "basic-cpp"
-    :title "Basic C++ Project"
-    :no-license? t)
-  (skeletor-define-template "full-cpp"
-    :title "Enhanced C++ Project"
-    :default-license "mit"))
 
 ;; Yasnippet: Snippet expander
 (use-package yasnippet
@@ -444,6 +500,20 @@
             (signal 'quit "user quit!")
           (cdr (assoc result rmap))))
     nil))
+
+
+;; Skeletor: Create project templates
+(use-package skeletor
+  :ensure t
+  :config
+  (add-to-list 'skeletor-global-substitutions
+               '("__USER-NAME__" . "David Hedin"))
+  (skeletor-define-template "basic-cpp"
+    :title "Basic C++ Project"
+    :no-license? t)
+  (skeletor-define-template "full-cpp"
+    :title "Enhanced C++ Project"
+    :default-license "mit"))
 
 ;; Auto insert: File skeletons
 (auto-insert-mode)
