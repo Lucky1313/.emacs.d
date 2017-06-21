@@ -192,17 +192,13 @@
   :config
   (autopair-global-mode 1))
 
-(defun custom/mark-all()
-  (interactive)
-  (mc/mark-all-symbols-like-this))
-
-;; ;; Multiple Cursors: Multi line editing
-;; (use-package multiple-cursors
-;;   :ensure t
-;;   :bind (("C-'" . mc/edit-lines)
-;;          ("C->" . mc/mark-next-symbol-like-this)
-;;          ("C-<" . mc/mark-previous-symbol-like-this)
-;;          ("C-;" . custom/mark-all)))
+;; Multiple Cursors: Multi line editing
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-'" . mc/edit-lines)
+         ("C->" . mc/mark-next-symbol-like-this)
+         ("C-<" . mc/mark-previous-symbol-like-this)
+         ("C-;" . mc/mark-all-symbols-like-this)))
 
 ;; Flyspell: Spell checking
 (use-package flyspell
