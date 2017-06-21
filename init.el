@@ -30,6 +30,8 @@
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 (setq version-control t)
 (setq vc-make-backup-files t)
+(setq kept-new-versions 10)
+(setq delete-old-versions t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
 ;; Save history
@@ -88,6 +90,25 @@
 ;;;;;;;;;;;;;;;;;;;
 ;; MODE SETTINGS ;;
 ;;;;;;;;;;;;;;;;;;;
+
+;; Smart mode line: Makes mode line cleaner
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (sml/setup)
+  ; Convert file paths of ~/Projects/abc/ to :PROJ:ABC:
+  (add-to-list 'sml/replacer-regexp-list
+             '("^~/Projects/\\(\\w+\\)/"
+               (lambda (s) (concat ":PROJ:" (upcase (match-string 1 s)) ":")))
+             t)
+  
+  (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":Proj:") t)
+  (add-to-list 'sml/replacer-regexp-list '("src/" "SRC:") t)
+  ; Only show flycheck and flyspell minor modes on the mode line
+  (setq rm-whitelist (mapconcat 'identity '(" Fly" " FlyC") "\\\|")))
+
+;; Show full list of minor modes
+;(message rm--help-echo)
 
 ;; Add mode settings
 (use-package markdown-mode
@@ -149,12 +170,6 @@
 ;;;;;;;;;;;;;;;;;;;;;
 ;; GLOBAL PACKAGES ;;
 ;;;;;;;;;;;;;;;;;;;;;
-
-;; Smart mode line: Makes mode line cleaner
-(use-package smart-mode-line
-  :ensure t
-  :config
-  (sml/setup))
 
 ;; Undo tree: Visualize undos
 (use-package undo-tree
@@ -227,12 +242,13 @@
 ;; Helm-Swoop: Fast find within file
 (use-package helm-swoop
   :ensure t
-  :bind (("M-s" . helm-swoop)
+  :bind (("M-s" . helm-swoop-without-pre-input)
          :map isearch-mode-map
          ("M-s" . helm-swoop-from-isearch)
          :map helm-swoop-map
          ("M-s" . helm-multi-swoop-current-mode-from-helm-swoop))
   :config
+  (setq helm-swoop-split-with-multiple-windows t)
   (setq helm-swoop-use-fuzzy-match t))
 
 ;; ;; Projectile: Project manager
@@ -255,7 +271,11 @@
 ;; Multi-term: Terminal
 (use-package multi-term
   :ensure t
-  :bind ("C-c t" . multi-term-dedicated-open))
+  :bind ("C-c t" . multi-term-dedicated-open)
+  :init
+  (add-hook 'term-mode-hook
+          (lambda ()
+            (setq term-buffer-maximum-size 10000))))
 
 ;; Magit: Git control
 (use-package magit
@@ -408,11 +428,18 @@
   :init
   (setq rtags-use-helm t))
 
+(defun custom/cmake-ide-run()
+  (interactive)
+  (shell-command (concat cmake-ide-build-dir "/" custom/cmake-ide-run-command)))
+
 ;; Cmake-IDE: Adds in RTags support for CMake projects
 (use-package cmake-ide
   :ensure t
-  :bind ("<f8>" . cmake-ide-compile)
+  :bind (("<f7>" . cmake-ide-compile)
+         ("<f8>" . custom/cmake-ide-run))
   :init
+  (setq max-mini-window-height 1)
+  (setq custom/cmake-ide-run-command "main")
   (cmake-ide-setup))
 
 ;; Load clang format file into string to be put
@@ -476,8 +503,8 @@
   :init
   (add-hook 'term-mode-hook '(lambda () (yas-minor-mode -1)))
   (yas-global-mode 1)
+  (setq yas-expand-only-for-last-commands '(self-insert-command))
   :config
-  (setq yas-expand-only-for-last-commands 'self-insert-command)
   (add-to-list 'yas-prompt-functions 'custom/helm-prompt))
 
 ;; Use helm to display snippets for yasnippet
