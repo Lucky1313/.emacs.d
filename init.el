@@ -68,6 +68,9 @@
 ;; Change yes/no to y/n
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; Enable local elisp eval
+(setq enable-local-eval 't)
+
 ;; Cycle spacing, switch between 1 space, no spaces or original
 ;; (global-set-key (kbd "M-SPC") 'cycle-spacing)
 
@@ -86,6 +89,9 @@
 ;; Delete highlighted text when typing
 (delete-selection-mode t)
 (transient-mark-mode t)
+
+;; Visual line mode for text mode
+(add-hook 'text-mode-hook 'visual-line-mode)
 
 ;;;;;;;;;;;;;;;;;;;
 ;; MODE SETTINGS ;;
@@ -247,16 +253,17 @@
   (setq helm-swoop-split-with-multiple-windows t)
   (setq helm-swoop-use-fuzzy-match t))
 
-;; ;; Projectile: Project manager
-;; (use-package projectile
-;;   :ensure t
-;;   :init
-;;   (projectile-global-mode 1)
-;;   :bind ("<f5>" . projectile-compile-project))
+;; Projectile: Project manager
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-global-mode 1)
+                                        ;:bind ("<f5>" . projectile-compile-project)
+  )
 
-;; (use-package helm-projectile
-;;   :ensure t
-;;   :bind ("C-c h" . helm-projectile))
+(use-package helm-projectile
+  :ensure t
+  :bind ("C-c h" . helm-projectile))
 
 ;; Tramp: Remote client connection
 (use-package tramp
@@ -283,6 +290,7 @@
   :ensure t
   :init
   (add-hook 'org-mode-hook 'org-indent-mode)
+  (add-hook 'org-mode-hook 'visual-line-mode)
   :config
   (setq org-log-done t
         org-directory "~/org"
@@ -308,13 +316,21 @@
   ;; Ditaa Drawing in Org
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((ditaa . t)))
-
-  (defun my-org-confirm-babel-evaluate (lang body)
-    (not (string= lang "ditaa")))
-  
-  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate
-        org-ditaa-jar-path "/usr/bin/ditaa"))
+   '((ditaa . t)
+     (python . t)
+     (sh . t)
+     (plantuml . t)
+     (latex . t)))
+  ; Disable confirm execute (Could be dangerous)
+  (setq org-confirm-babel-evaluate nil)
+  ; Add jar paths
+  (setq org-ditaa-jar-path
+        (expand-file-name "/usr/bin/ditaa"))
+  (setq org-plantuml-jar-path
+        (expand-file-name "/usr/share/plantuml/plantuml.jar"))
+  ; Display images inline after execution
+  (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PROGRAMMING PACKAGES ;;
@@ -470,14 +486,17 @@
   (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
 
 ;; Python autocomplete
-(use-package company-jedi
-  :ensure t
-  :init
-  (setq jedi:environment-virtualenv (list (expand-file-name "~/.emacs.d/.python-environments/")))
-  (add-to-list 'company-backends 'company-jedi)
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (setq jedi:complete-on-dot t)
-  (setq jedi:use-shortcuts t))
+;; (use-package company-jedi
+;;   :ensure t
+;;   :config
+;;   (setq jedi:environment-virtualenv (list (expand-file-name "~/.emacs.d/.python-environments/")))
+;;   (add-to-list 'company-backends 'company-jedi)
+;;   (add-hook 'python-mode-hook 'jedi:setup)
+;;   (setq jedi:complete-on-dot t)
+;;   (setq jedi:use-shortcuts t)
+;;   (defun custom/enable-company-jedi ()
+;;     (add-to-list 'company-backends 'company-jedi))
+;;   (add-hook 'python-mode-hook 'custom/enable-company-jedi))
 
 ;; LaTeX processing
 (use-package tex-mik
