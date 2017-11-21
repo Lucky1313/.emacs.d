@@ -11,6 +11,7 @@
 ;; Autoinstall use-package
 (when (not (package-installed-p 'use-package)) (package-refresh-contents) (package-install 'use-package))
 (require 'use-package)
+(setq use-package-always-ensure t)
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; THEME SETTINGS ;;
@@ -18,7 +19,6 @@
 
 ;; Theme
 (use-package zenburn-theme
-	:ensure t
   :config
   (load-theme 'zenburn t))
 
@@ -33,18 +33,6 @@
 (setq kept-new-versions 10)
 (setq delete-old-versions t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
-
-;; Save history
-(setq savehist-file "~/.emacs.d/savehist")
-(savehist-mode 1)
-(setq history-length t)
-(setq history-delete-duplicates t)
-(setq savehist-save-minibuffer-history 1)
-(setq savehist-additional-variables
-      '(kill-ring
-        search-ring
-        regexp-search-ring))
-
 
 ;; Editor settings
 (tool-bar-mode -1)
@@ -71,9 +59,6 @@
 ;; Enable local elisp eval
 (setq enable-local-eval 't)
 
-;; Cycle spacing, switch between 1 space, no spaces or original
-;; (global-set-key (kbd "M-SPC") 'cycle-spacing)
-
 ;; Indent new lines properly
 (add-hook 'prog-mode-hook
           (lambda () (local-set-key (kbd "RET") 'newline-and-indent)))
@@ -93,13 +78,20 @@
 ;; Visual line mode for text mode
 (add-hook 'text-mode-hook 'visual-line-mode)
 
+;; Kill emacs server if client frame is last one
+(defun custom/last-frame-kill(frame)
+  (if (= (length (frame-list)) 2) ; One for current frame and one for server
+      (progn
+        (save-some-buffers)
+        (kill-emacs))))
+(add-to-list 'delete-frame-functions 'custom/last-frame-kill)
+
 ;;;;;;;;;;;;;;;;;;;
 ;; MODE SETTINGS ;;
 ;;;;;;;;;;;;;;;;;;;
 
 ;; Smart mode line: Makes mode line cleaner
 (use-package smart-mode-line
-  :ensure t
   :config
   (sml/setup)
   ; Convert file paths of ~/Projects/abc/ to :PROJ:ABC:
@@ -111,44 +103,40 @@
   (add-to-list 'sml/replacer-regexp-list '("^~/Projects/" ":Proj:") t)
   (add-to-list 'sml/replacer-regexp-list '("src/" "SRC:") t)
   ; Only show flycheck and flyspell minor modes on the mode line
-  (setq rm-whitelist (mapconcat 'identity '(" Fly" " FlyC") "\\\|")))
+  ;(setq rm-whitelist (mapconcat 'identity '("Fly" "FlyC") "\\\|"))
+  )
+; Delight to remove items from mode line?
 
-;; Show full list of minor modes
+;; Print full list of minor modes
 ;(message rm--help-echo)
 
 ;; Add mode settings
 (use-package markdown-mode
-  :ensure t
   :mode "\\.md\\'"
   :interpreter "markdown")
 (use-package cuda-mode
-  :ensure t
   :mode "\\.cu\\'"
   :interpreter "cuda")
 (use-package julia-mode
-  :ensure t
   :mode "\\.jl\\'"
   :interpreter "julia")
 (use-package systemd
-  :ensure t
   :mode ("\\.service\\'" . systemd-mode)
   :interpreter ("systemd" . systemd-mode))
 (use-package syslog-mode
-  :ensure t
   :mode "/var/log.*\\'"
   :interpreter "syslog")
 (use-package arduino-mode
-  :ensure t
   :mode "\\.ino\\'"
   :interpreter "arduino")
 (use-package yaml-mode
-  :ensure t
   :mode "\\.yml\\'"
   :interpreter "yaml")
 (use-package glsl-mode
-  :ensure t
   :mode ("\\.vert\\'" "\\.frag\\'" "\\.glsl\\'" "\\.geom\\'")
   :interpreter "glsl")
+(use-package plantuml-mode
+  :interpreter "plantuml")
 
 (setq cc-other-file-alist
       '(("\\.c"   (".h"))
@@ -179,7 +167,6 @@
 
 ;; Undo tree: Visualize undos
 (use-package undo-tree
-  :ensure t
   :config
   (global-undo-tree-mode)
   (setq undo-tree-visualizer-timestamps t)
@@ -187,14 +174,13 @@
 
 ;; Auto-highlight-symbol: Highlight current item
 (use-package auto-highlight-symbol
-  :ensure t
   :config
   (global-auto-highlight-symbol-mode 1)
   (ahs-set-idle-interval 0.1))
 
+;; Should use electric mode
 ;; Autopair: Auto complete delimiters
 (use-package autopair
-  :ensure t
   :config
   (autopair-global-mode 1))
 
@@ -202,48 +188,44 @@
 (use-package multiple-cursors
   :ensure t
   :bind (("C-'" . mc/edit-lines)
-         ("C->" . mc/mark-next-symbol-like-this)
-         ("C-<" . mc/mark-previous-symbol-like-this)
-         ("C-;" . mc/mark-all-symbols-like-this)))
+         ("C->" . mc/mark-next-like-this-symbol)
+         ("C-<" . mc/unmark-next-like-this)
+         ("C-;" . mc/mark-all-like-this)))
 
 ;; Flyspell: Spell checking
 (use-package flyspell
-  :ensure t
   :init
   (add-hook 'text-mode-hook 'flyspell-mode)
   (add-hook 'prog-mode-hook 'flyspell-prog-mode))
-
-;; Jump to next misspelled word and pop-up correction
-(use-package flyspell-popup
-  :ensure t
-  :bind (:map flyspell-mode-map
-              ("C-," . custom/flyspell-next-word)))
 
 (defun custom/flyspell-next-word()
   (interactive)
   (flyspell-goto-next-error)
   (flyspell-popup-correct))
 
+;; Jump to next misspelled word and pop-up correction
+(use-package flyspell-popup
+  :bind (:map flyspell-mode-map
+              ("C-," . custom/flyspell-next-word)))
+
 ;; Flycheck: Semantic checking
 (use-package flycheck
-  :ensure t
   :bind (:map flycheck-mode-map
               ("C-." . flycheck-next-error))
-  :init
+  :config
   (global-flycheck-mode 1))
 
 ;; Helm: Minibuffer completion
 (use-package helm
-  :ensure t
+  :bind (("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files))
   :init
   (helm-mode 1)
-  (setq helm-split-window-in-side-p t)
-  :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)))
+  :config
+  (setq helm-split-window-in-side-p t))
 
 ;; Helm-Swoop: Fast find within file
 (use-package helm-swoop
-  :ensure t
   :bind (("M-s" . helm-swoop-without-pre-input)
          :map isearch-mode-map
          ("M-s" . helm-swoop-from-isearch)
@@ -255,25 +237,20 @@
 
 ;; Projectile: Project manager
 (use-package projectile
-  :ensure t
-  :init
-  (projectile-global-mode 1)
-                                        ;:bind ("<f5>" . projectile-compile-project)
-  )
+  :bind ("<f5>" . projectile-compile-project)
+  :config
+  (projectile-mode 1))
 
 (use-package helm-projectile
-  :ensure t
   :bind ("C-c h" . helm-projectile))
 
 ;; Tramp: Remote client connection
 (use-package tramp
-  :ensure t
   :config
   (setq tramp-default-method "ssh"))
 
 ;; Multi-term: Terminal
 (use-package multi-term
-  :ensure t
   :bind ("C-c t" . multi-term-dedicated-open)
   :init
   (add-hook 'term-mode-hook
@@ -282,16 +259,19 @@
 
 ;; Magit: Git control
 (use-package magit
-  :ensure t
   :bind ("C-c g" . magit-status))
+
+;; Treemacs: File explorer
+;; (use-package treemacs)
+
+;; ;; Treemacs-Projectile: Projectile mode for Treemacs
+;; (use-package treemacs-projectile)
 
 ;; Org mode: Organization
 (use-package org
-  :ensure t
-  :init
+  :config
   (add-hook 'org-mode-hook 'org-indent-mode)
   (add-hook 'org-mode-hook 'visual-line-mode)
-  :config
   (setq org-log-done t
         org-directory "~/org"
         org-support-shift-select t
@@ -300,9 +280,7 @@
         org-modules
         '(org-babel
           org-bibtex
-          org-habit
-          org-checklist
-          org-depend)
+          org-checklist)
         org-todo-keywords
         '((sequence "TODO(t)" "IN PROGRESS(p)" "|" "DONE(d!)")
           (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))
@@ -332,13 +310,12 @@
   (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PROGRAMMING PACKAGES ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; PROGRAMMING PACKAGES ;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Ansi-color: Colorize compilation buffer
 (use-package ansi-color
-  :ensure t
   :init
   (add-hook 'compilation-filter-hook 'colorize-compilation-buffer))
 
@@ -349,110 +326,104 @@
 
 ;; Rainbow-delimiters: Rainbow colors for braces/parentheses
 (use-package rainbow-delimiters
-  :ensure t
   :init
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 ;; Fic-mode: Highlights FIXMEs and TODOs
 (use-package fic-mode
-  :ensure t
   :init
   (add-hook 'prog-mode-hook 'fic-mode))
 
 ;; Company: Autocompletion
 (use-package company
-  :ensure t
   :init
   (add-hook 'prog-mode-hook 'company-mode)
+  :config
   (setq company-idle-delay 0))
 
 ;; Company-Statistics: Suggest most used completions first
 (use-package company-statistics
-  :ensure t
   :init
   (add-hook 'company-mode-hook 'company-statistics-mode))
 
 ;; Company-Quickhelp: Add information about completions
 (use-package company-quickhelp
-  :ensure t
   :init
   (add-hook 'company-mode-hook 'company-quickhelp-mode))
 
-;; ;; Company-C-Headers: Add c headers for autocompletion
-;; (use-package company-c-headers
-;;   :ensure t
-;;   :config
-;;   (add-to-list 'company-backends 'company-c-headers))
+;; Company-C-Headers: Add c headers for autocompletion
+(use-package company-c-headers
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-c-headers))
 
 ;; Add cmake autocompletion
 (use-package company-cmake
-  :ensure t
-  :config
+  :init
   (add-to-list 'company-backends 'company-cmake))
 
 ;; Irony: Autocomplete engine
 (use-package irony
-  :ensure t
   :init
   (add-hook 'c-mode-common-hook 'irony-mode)
+  :config
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
 
 ;; Company-Irony: Use Irony as backend for company
 (use-package company-irony
-  :ensure t
-  :config
+  :init
   (add-to-list 'company-backends 'company-irony)
+  :config
   (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands))
 
 ;; Add c headers to irony
 (use-package company-irony-c-headers
-  :ensure t
-  :config
+  :init
   (add-to-list 'company-backends 'company-irony-c-headers))
 
 ;; Add Irony as backend for flymake
 (use-package flycheck-irony
-  :ensure t
-  :config
+  :init
   (add-hook 'flychek-mode-hook #'flycheck-irony-setup))
 
 ;; Rtags: C/C++ Indexing
 (use-package rtags
-  :ensure t
   :bind (:map c-mode-base-map
               ("M-." . rtags-find-symbol-at-point)
               ("M-," . rtags-find-references-at-point)
               ("M-/" . rtags-find-symbol))
-  :init
+  :config
   (setq rtags-autostart-diagnostics t)
   (rtags-diagnostics)
-  ;; (setq rtags-completions-enabled t)
-  ;; (push 'company-rtags company-backends)
   (rtags-enable-standard-keybindings))
 
-;; Flycheck RTags
-(use-package flycheck-rtags
-  :ensure t)
+;; Company backend from rtags
+(use-package company-rtags
+ :init
+ (setq rtags-completions-enabled t)
+ (add-to-list 'company-backends 'company-rtags))
 
-;; Rtags helm integration
+;; Flycheck backend from rtags
+(use-package flycheck-rtags)
+
+;; Use helm for rtags
 (use-package helm-rtags
-  :ensure t
   :init
   (setq rtags-use-helm t))
 
-(defun custom/cmake-ide-run()
-  (interactive)
-  (shell-command (concat cmake-ide-build-dir "/" custom/cmake-ide-run-command)))
+;; (defun custom/cmake-ide-run()
+;;   (interactive)
+;;   (shell-command (concat cmake-ide-build-dir "/" custom/cmake-ide-run-command)))
 
-;; Cmake-IDE: Adds in RTags support for CMake projects
-(use-package cmake-ide
-  :ensure t
-  :bind (("<f7>" . cmake-ide-compile)
-         ("<f8>" . custom/cmake-ide-run))
-  :init
-  (setq max-mini-window-height 1)
-  (setq custom/cmake-ide-run-command "main")
-  (cmake-ide-setup))
+;; ;; Cmake-IDE: Adds in RTags support for CMake projects
+;; (use-package cmake-ide
+;;   :ensure t
+;;   :bind (("<f7>" . cmake-ide-compile)
+;;          ("<f8>" . custom/cmake-ide-run))
+;;   :init
+;;   (setq max-mini-window-height 1)
+;;   (setq custom/cmake-ide-run-command "main")
+;;   (cmake-ide-setup))
 
 ;; Load clang format file into string to be put
 ;; in the -style={} argument
@@ -472,16 +443,15 @@
 
 ;; Clang format: Autoformat C/C++ with clang-format
 (use-package clang-format
-  :ensure t
+  :bind (:map c-mode-base-map
+              ("M-f" . custom/clang-format-default))
   :init
   (defvar custom/clang-style "file")
   (custom/load-format-file "~/.emacs.d/clang-format")
-  :bind (:map c-mode-base-map
-              ("M-f" . custom/clang-format-default)))
+  )
 
 ;; Py-Autopep8: Auto pep8 format python
 (use-package py-autopep8
-  :ensure t
   :init
   (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
 
@@ -501,7 +471,7 @@
 ;; LaTeX processing
 (use-package tex-mik
   :ensure auctex
-  :init
+  :config
   (add-hook 'LaTeX-mode-hook 'visual-line-mode)
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
@@ -512,14 +482,12 @@
 
 ;; Yasnippet: Snippet expander
 (use-package yasnippet
-  :ensure t
   :bind ("C-c s" . yas-insert-snippet)
-  :functions custom/skel
   :init
   (add-hook 'term-mode-hook '(lambda () (yas-minor-mode -1)))
+  :config
   (yas-global-mode 1)
   (setq yas-expand-only-for-last-commands '(self-insert-command))
-  :config
   (add-to-list 'yas-prompt-functions 'custom/helm-prompt))
 
 ;; Use helm to display snippets for yasnippet
@@ -543,10 +511,8 @@
           (cdr (assoc result rmap))))
     nil))
 
-
 ;; Skeletor: Create project templates
 (use-package skeletor
-  :ensure t
   :config
   (add-to-list 'skeletor-global-substitutions
                '("__USER-NAME__" . "David Hedin"))
@@ -595,3 +561,4 @@
       .
       ["skel.tex" custom/skel]))))
  '(auto-insert-directory "~/.emacs.d/snippets/skeletons/"))
+
