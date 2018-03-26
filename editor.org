@@ -1,0 +1,253 @@
+#+TITLE: Editor
+#+AUTHOR: David Hedin
+#+EMAIL: david.hedin13@gmail.com
+
+* Theme
+#+begin_src emacs-lisp :tangle yes
+  (use-package zenburn-theme
+    :config
+    (load-theme 'zenburn t))
+#+end_src
+
+* Backups
+Changes backup files location from the directory the original file is in to all being in the emacs direcotry. Also change emacs autosaves to be there too.
+#+begin_src emacs-lisp :tangle yes
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+#+end_src
+
+* Emacs Settings
+Revert files if they are changed by another program
+#+begin_src emacs-lisp :tangle yes
+  (global-auto-revert-mode t)
+#+end_src
+
+Change yes/no to y/n
+#+begin_src emacs-lisp :tangle yes
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+Enable local elisp eval
+#+begin_src emacs-lisp :tangle yes
+  (setq enable-local-eval 't)
+#+end_src
+
+Delete highlighted text when typing
+#+begin_src emacs-lisp :tangle yes
+  (delete-selection-mode t)
+  (transient-mark-mode t)
+#+end_src
+
+Tab width
+#+begin_src emacs-lisp :tangle yes
+  (setq-default tab-width 2
+                indent-tabs-mode nil)
+  (setq indent-line-function 'insert-tab)
+#+end_src
+
+Word wrap in text mode
+#+begin_src emacs-lisp :tangle yes
+  (add-hook 'text-mode-hook 'visual-line-mode)
+#+end_src
+
+* Bookmarks
+Easy bookmark access using =<f9>=.
+#+begin_src emacs-lisp :tangle yes
+  (global-set-key (kbd "<f9>") 'list-bookmarks)
+#+end_src
+
+=bm=
+=bookmark+=
+
+* Window Configuration
+No toolbar, menubar, tooltip, scroll bar, or startup screen.
+
+#+begin_src emacs-lisp :tangle yes
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (tooltip-mode -1)
+  (scroll-bar-mode -1)
+  (setq inhibit-startup-screen t)
+#+end_src
+
+Show line numbers everywhere
+#+begin_src emacs-lisp :tangle yes
+  (global-linum-mode 1)
+#+end_src
+
+** Mode Line
+Display current time and current cursor column number in mode line
+#+begin_src emacs-lisp :tangle yes
+  (display-time-mode 1)
+  (column-number-mode 1)
+#+end_src
+
+Use the =smart-mode-line= package.
+I don't like the original color scheme, so I changed it to use the colors org would use
+#+begin_src emacs-lisp :tangle yes
+  (use-package smart-mode-line-powerline-theme)
+
+  (use-package smart-mode-line
+    :custom
+    (sml/theme 'powerline)
+    (sml/no-confirm-load-theme t)
+    :config
+    ;; (setq sml/theme 'powerline)
+    ;; (setq sml/no-confirm-load-theme t)
+    (sml/setup)
+    (set-face-attribute 'sml/prefix nil
+                        :foreground (face-attribute 'org-level-1 :foreground))
+    (set-face-attribute 'sml/folder nil
+                        :foreground (face-attribute 'org-level-2 :foreground))
+    (set-face-attribute 'sml/filename nil
+                        :foreground (face-attribute 'org-level-3 :foreground))
+    (set-face-attribute 'sml/position-percentage nil
+                        :foreground (face-attribute 'sml/col-number :foreground))
+    ; Convert file paths of ~/Projects/abc/ to :PROJ:ABC:
+    (add-to-list 'sml/replacer-regexp-list
+               '("^~/Projects/\\(\\w+\\)/"
+                 (lambda (s) (concat ":" (upcase (match-string 1 s)) ":")))
+               t)
+    (add-to-list 'sml/replacer-regexp-list '("src/" "SRC:") t)
+    (add-to-list 'sml/replacer-regexp-list '("include/" "INC:") t)
+    ; Only show flycheck and flyspell minor modes on the mode line
+    ; ADD PROJECTILE
+    (setq rm-whitelist (mapconcat 'identity '("Fly" "FlyC") "\\\|"))
+    )
+#+end_src
+
+* Common Packages
+These are common packages that are used by me everywhere in emacs
+** Helm
+#+begin_src emacs-lisp :tangle yes
+  (use-package helm
+    :bind (("M-x" . helm-M-x)
+           ("M-y" . helm-show-kill-ring)
+           ("C-x C-f" . helm-find-files))
+    :init
+    (helm-mode 1)
+    :config
+    (setq helm-split-window-in-side-p t))
+#+end_src
+
+Helm Swoop
+#+begin_src emacs-lisp :tangle yes
+  ;; Helm-Swoop: Fast find within file
+  (use-package helm-swoop
+    :bind (("M-s" . helm-swoop-without-pre-input)
+           :map isearch-mode-map
+           ("M-s" . helm-swoop-from-isearch)
+           :map helm-swoop-map
+           ("M-s" . helm-multi-swoop-current-mode-from-helm-swoop))
+    :config
+    (setq helm-swoop-split-with-multiple-windows t)
+    (setq helm-swoop-use-fuzzy-match t))
+#+end_src
+
+** Undo Tree
+#+begin_src emacs-lisp :tangle yes
+  ;; Undo tree: Visualize undos
+  (use-package undo-tree
+    :config
+    (global-undo-tree-mode)
+    (setq undo-tree-visualizer-timestamps t)
+    (setq undo-tree-visualizer-diff t))
+#+end_src
+
+** Auto Highlighting
+#+begin_src emacs-lisp :tangle yes
+  ;; Auto-highlight-symbol: Highlight current item
+  (use-package auto-highlight-symbol
+    :custom
+    (global-auto-highlight-symbol-mode 1)
+    (ahs-set-idle-interval 0.1))
+#+end_src
+
+** Auto Pair Mode
+Auto pair parentheses
+#+begin_src emacs-lisp :tangle yes
+  ;;(electric-pair-mode 1) ;; Doesn't work as well as autopair IMO
+  ;; Autopair: Auto complete delimiters
+  (use-package autopair
+    :custom
+    (autopair-global-mode 1))
+#+end_src
+
+** Multiple Cursors
+#+begin_src emacs-lisp :tangle yes
+  ;; Multiple Cursors: Multi line editing
+  (use-package multiple-cursors
+    :ensure t
+    :bind (("C-'" . mc/edit-lines)
+           ("C->" . mc/mark-next-like-this-symbol)
+           ("C-<" . mc/unmark-next-like-this)
+           ("C-;" . mc/mark-all-like-this)))
+#+end_src
+
+** Flyspell
+#+begin_src emacs-lisp :tangle yes
+  ;; Flyspell: Spell checking
+  (use-package flyspell
+    :hook ((text-mode . flyspell-mode)
+           (prog-mode . flyspell-prog-mode)))
+  ;; :init
+  ;; (add-hook 'text-mode-hook 'flyspell-mode)
+  ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+
+  (defun custom/flyspell-next-word()
+    (interactive)
+    (flyspell-goto-next-error)
+    (flyspell-popup-correct))
+  ;; Jump to next misspelled word and pop-up correction
+  (use-package flyspell-popup
+    :bind (:map flyspell-mode-map
+                ("C-," . custom/flyspell-next-word)))
+#+end_src
+
+** Remote Editing
+#+begin_src emacs-lisp :tangle yes
+  ;; Tramp: Remote client connection
+  (use-package tramp
+    :config
+    (setq tramp-default-method "ssh"))
+#+end_src
+
+** Terminal
+#+begin_src emacs-lisp :tangle yes
+  ;; Multi-term: Terminal
+  (use-package multi-term
+    :bind ("C-c t" . multi-term-dedicated-open)
+    :hook (term-mode . (lambda ()
+              (setq term-buffer-maximum-size 10000))))
+  ;;  :init
+  ;;  (add-hook 'term-mode-hook
+  ;;          (lambda ()
+  ;;            (setq term-buffer-maximum-size 10000))))
+#+end_src
+
+** Searching
+#+begin_src emacs-lisp :tangle yes
+  (use-package helm-ag)
+  ;; Needs more configuration https://github.com/syohex/emacs-helm-ag
+#+end_src
+
+** Howdoi
+Search stackoverflow for top answer from query
+#+begin_src emacs-lisp :tangle yes
+  (use-package howdoi)
+#+end_src
+
+** Cut line if nothing is selected
+#+begin_src emacs-lisp :tangle yes
+  ; From http://ergoemacs.org/emacs/emacs_copy_cut_current_line.html
+  (defun custom/kill-text-dwim ()
+    (interactive)
+    (if current-prefix-arg
+        (progn ; not using kill-region because we don't want to include previous kill
+          (kill-new (buffer-string))
+          (delete-region (point-min) (point-max)))
+      (progn (if (use-region-p)
+                 (kill-region (region-beginning) (region-end) t)
+               (kill-region (line-beginning-position) (line-beginning-position 2))))))
+  (global-set-key (kbd "C-w") 'custom/kill-text-dwim)
+#+end_src
