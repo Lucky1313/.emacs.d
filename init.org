@@ -70,7 +70,9 @@ The rest of the configuration is split into multiple files.
   (org-babel-load-file
    (expand-file-name "programming.org"
                      user-emacs-directory))
-  ;  (org-babel-load-file (expand-file-name "~/.emacs.d/templates.org"))
+  (org-babel-load-file
+   (expand-file-name "templates.org"
+                     user-emacs-directory))
 #+end_src
 
 * Running Emacs
@@ -90,3 +92,6 @@ Emacs needs to be launched using this command
 #+begin_src sh :tangle no
 emacsclient --alternate-editor="" 
 #+end_src
+
+* To Do List
+List of all of the todos for my config: [[file:todo.org][TODO]]

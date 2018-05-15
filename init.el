@@ -20,7 +20,9 @@
 (org-babel-load-file
  (expand-file-name "programming.org"
                    user-emacs-directory))
-;  (org-babel-load-file (expand-file-name "~/.emacs.d/templates.org"))
+(org-babel-load-file
+ (expand-file-name "templates.org"
+                   user-emacs-directory))
 
 (defun custom/last-frame-kill(frame)
   (if (= (length (frame-list)) 2) ; One for current frame and one for server

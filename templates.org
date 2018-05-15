@@ -1,0 +1,35 @@
+
+* Yasnippet
+
+#+begin_src emacs-lisp :tangle yes
+;; Yasnippet: Snippet expander
+(use-package yasnippet
+  :bind ("C-c s" . yas-insert-snippet)
+  :init
+  (add-hook 'term-mode-hook '(lambda () (yas-minor-mode -1)))
+  :config
+  (yas-global-mode 1)
+  (setq yas-expand-only-for-last-commands '(self-insert-command))
+  (add-to-list 'yas-prompt-functions 'custom/helm-prompt))
+
+;; Use helm to display snippets for yasnippet
+(defun custom/helm-prompt (prompt choices &optional display-fn)
+  "Use helm to select a snippet. Put this into `yas/prompt-functions.'"
+  (interactive)
+  (setq display-fn (or display-fn 'identity))
+  (if (require 'helm-config)
+      (let (tmpsource cands result rmap)
+        (setq cands (mapcar (lambda (x) (funcall display-fn x)) choices))
+        (setq rmap (mapcar (lambda (x) (cons (funcall display-fn x) x)) choices))
+        (setq tmpsource
+              (list
+               (cons 'name prompt)
+               (cons 'candidates cands)
+               '(action . (("Expand" . (lambda (selection) selection))))
+               ))
+        (setq result (helm-other-buffer '(tmpsource) "*helm-select-yasnippet"))
+        (if (null result)
+            (signal 'quit "user quit!")
+          (cdr (assoc result rmap))))
+    nil))
+#+end_src

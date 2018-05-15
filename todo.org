@@ -1,0 +1,32 @@
+* C++ Autocomplete
+* Project Management
+* Python mode changes
+* Yasnippets
+* File skeletons
+* Helm swoop, change from fuzzy mode or not
+* Org capture
+* Debugging support
+* Wrap nearby symbol with quotes or parens
+
+* visual regexp steroids
+* whitespace mode 
+* dimmer
+* hungry delete
+* string inflection
+* tiny
+* smartparens
+* aggressive indent mode
+* indent guide
+* symon
+* docker
+* emacs start up profiler
+http://whattheemacsd.com/file-defuns.el-01.html#disqus_thread
+https://www.emacswiki.org/emacs/move-text.el
+* shackle
+* fancy-narrow
+
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+(global-set-key (kbd "C-x K") 'kill-buffer)
+* cycle-spacing
+* company-math
+https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
