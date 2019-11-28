@@ -32,4 +32,12 @@ make -j$NPROC
 
 # Install
 sudo make install
-sudo cp etc/emacs.desktop /usr/share/applications/
+# Change desktop file to use emacsclient
+sed -i "/^Exec=emacs/ s/emacs/emacsclient -c -a \"emacs\"/" etc/emacs.desktop
+# Change service file to always restart server
+sed -i "/^Restart=on-failure/ s/on-failure/always/" etc/emacs.service
+# Install desktop and systemd files
+sudo make install-etc
+# Systemd service
+systemctl enable --user emacs
+systemctl start --user emacs
