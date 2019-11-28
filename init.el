@@ -1,10 +1,11 @@
-
 (package-initialize)
 (require 'org)
 (org-babel-tangle-file
  (expand-file-name "init.org"
                    user-emacs-directory))
-(load-file "/home/david/.emacs.d/package.el")
+(load-file
+ (expand-file-name "package.el"
+                   user-emacs-directory))
 
 (setq custom-file
       (expand-file-name "custom.el"

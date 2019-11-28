@@ -33,3 +33,10 @@
           (cdr (assoc result rmap))))
     nil))
 #+end_src
+
+
+#+begin_src emacs-lisp :tangle yes
+;; A collection of snippets for yasnippet
+(use-package yasnippet-snippets)
+#+end_src
+

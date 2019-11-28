@@ -1,10 +1,10 @@
-;;;; Emacs Bookmark Format Version 1 ;;;;
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("init.org"
  (filename . "~/.emacs.d/init.org")
- (front-context-string . "\n* Config bootst")
- (rear-context-string . "din13@gmail.com\n")
- (position . 78))
+ (front-context-string . "#+TITLE: Emacs C")
+ (rear-context-string)
+ (position . 1))
 )

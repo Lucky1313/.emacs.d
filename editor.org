@@ -1,6 +1,5 @@
 #+TITLE: Editor
 #+AUTHOR: David Hedin
-#+EMAIL: david.hedin13@gmail.com
 
 * Theme
 #+begin_src emacs-lisp :tangle yes
@@ -10,7 +9,7 @@
 #+end_src
 
 * Backups
-Changes backup files location from the directory the original file is in to all being in the emacs direcotry. Also change emacs autosaves to be there too.
+Changes backup files location from the directory the original file is in to all being in the emacs directory. Also change emacs autosaves to be there too.
 #+begin_src emacs-lisp :tangle yes
   (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
   (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
@@ -50,14 +49,17 @@ Word wrap in text mode
   (add-hook 'text-mode-hook 'visual-line-mode)
 #+end_src
 
+Show matching parentheses
+#+begin_src emacs-lisp :tangle yes
+  (show-paren-mode t)
+#+end_src
+
+
 * Bookmarks
 Easy bookmark access using =<f9>=.
 #+begin_src emacs-lisp :tangle yes
   (global-set-key (kbd "<f9>") 'list-bookmarks)
 #+end_src
-
-=bm=
-=bookmark+=
 
 * Window Configuration
 No toolbar, menubar, tooltip, scroll bar, or startup screen.
@@ -86,14 +88,11 @@ Use the =smart-mode-line= package.
 I don't like the original color scheme, so I changed it to use the colors org would use
 #+begin_src emacs-lisp :tangle yes
   (use-package smart-mode-line-powerline-theme)
-
   (use-package smart-mode-line
     :custom
     (sml/theme 'powerline)
     (sml/no-confirm-load-theme t)
     :config
-    ;; (setq sml/theme 'powerline)
-    ;; (setq sml/no-confirm-load-theme t)
     (sml/setup)
     (set-face-attribute 'sml/prefix nil
                         :foreground (face-attribute 'org-level-1 :foreground))
@@ -103,17 +102,16 @@ I don't like the original color scheme, so I changed it to use the colors org wo
                         :foreground (face-attribute 'org-level-3 :foreground))
     (set-face-attribute 'sml/position-percentage nil
                         :foreground (face-attribute 'sml/col-number :foreground))
-    ; Convert file paths of ~/Projects/abc/ to :PROJ:ABC:
+    ; Convert file paths of ~/ws/abc/ to :WS:ABC:
     (add-to-list 'sml/replacer-regexp-list
-               '("^~/Projects/\\(\\w+\\)/"
+               '("^~/ws/\\(\\w+\\)/"
                  (lambda (s) (concat ":" (upcase (match-string 1 s)) ":")))
                t)
     (add-to-list 'sml/replacer-regexp-list '("src/" "SRC:") t)
     (add-to-list 'sml/replacer-regexp-list '("include/" "INC:") t)
     ; Only show flycheck and flyspell minor modes on the mode line
     ; ADD PROJECTILE
-    (setq rm-whitelist (mapconcat 'identity '("Fly" "FlyC") "\\\|"))
-    )
+    (setq rm-whitelist (mapconcat 'identity '("Fly" "FlyC") "\\\|")))
 #+end_src
 
 * Common Packages
@@ -123,16 +121,22 @@ These are common packages that are used by me everywhere in emacs
   (use-package helm
     :bind (("M-x" . helm-M-x)
            ("M-y" . helm-show-kill-ring)
-           ("C-x C-f" . helm-find-files))
+           ("C-x C-f" . helm-find-files)
+           ("C-x b" . helm-buffers-list)
+           :map helm-find-files-map
+           ("C-s" . helm-ff-run-grep-ag))
     :init
     (helm-mode 1)
     :config
+    (helm-autoresize-mode 1)
+    (setq helm-autoresize-max-height 30)
+    (setq helm-autoresize-min-height 20)
     (setq helm-split-window-in-side-p t))
 #+end_src
 
-Helm Swoop
+** Helm Swoop
+Better in file searching, press the shortcut again to swoop all files
 #+begin_src emacs-lisp :tangle yes
-  ;; Helm-Swoop: Fast find within file
   (use-package helm-swoop
     :bind (("M-s" . helm-swoop-without-pre-input)
            :map isearch-mode-map
@@ -140,13 +144,13 @@ Helm Swoop
            :map helm-swoop-map
            ("M-s" . helm-multi-swoop-current-mode-from-helm-swoop))
     :config
-    (setq helm-swoop-split-with-multiple-windows t)
-    (setq helm-swoop-use-fuzzy-match t))
+    (setq helm-swoop-split-with-multiple-windows t))
+    ;;(setq helm-swoop-use-fuzzy-match t))
 #+end_src
 
 ** Undo Tree
+Visualize undos with a tree, replace normal emacs undo.
 #+begin_src emacs-lisp :tangle yes
-  ;; Undo tree: Visualize undos
   (use-package undo-tree
     :config
     (global-undo-tree-mode)
@@ -155,44 +159,41 @@ Helm Swoop
 #+end_src
 
 ** Auto Highlighting
+Highlights the item under the cursor
 #+begin_src emacs-lisp :tangle yes
-  ;; Auto-highlight-symbol: Highlight current item
   (use-package auto-highlight-symbol
+    :hook 
+    (prog-mode . auto-highlight-symbol-mode)
     :custom
-    (global-auto-highlight-symbol-mode 1)
     (ahs-set-idle-interval 0.1))
 #+end_src
 
 ** Auto Pair Mode
-Auto pair parentheses
+Auto pair parentheses, brackets, and quotes.
 #+begin_src emacs-lisp :tangle yes
-  ;;(electric-pair-mode 1) ;; Doesn't work as well as autopair IMO
-  ;; Autopair: Auto complete delimiters
   (use-package autopair
     :custom
     (autopair-global-mode 1))
 #+end_src
 
 ** Multiple Cursors
+Crete multiple cursors for editing multiple lines at the same time
 #+begin_src emacs-lisp :tangle yes
-  ;; Multiple Cursors: Multi line editing
   (use-package multiple-cursors
     :ensure t
-    :bind (("C-'" . mc/edit-lines)
+    :bind (("C-\"" . mc/edit-lines)
            ("C->" . mc/mark-next-like-this-symbol)
-           ("C-<" . mc/unmark-next-like-this)
-           ("C-;" . mc/mark-all-like-this)))
+           ("C-<" . mc/unmark-next-like-this)))
 #+end_src
 
 ** Flyspell
+Automatic spell checking
 #+begin_src emacs-lisp :tangle yes
-  ;; Flyspell: Spell checking
   (use-package flyspell
-    :hook ((text-mode . flyspell-mode)
-           (prog-mode . flyspell-prog-mode)))
-  ;; :init
-  ;; (add-hook 'text-mode-hook 'flyspell-mode)
-  ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+    :hook
+    ((text-mode . flyspell-mode)
+    (prog-mode . flyspell-prog-mode)
+    (org-mode . flyspell-mode)))
 
   (defun custom/flyspell-next-word()
     (interactive)
@@ -204,25 +205,38 @@ Auto pair parentheses
                 ("C-," . custom/flyspell-next-word)))
 #+end_src
 
-** Remote Editing
+
+** Writegood
+Mode that looks for weasel words and passive voice
 #+begin_src emacs-lisp :tangle yes
-  ;; Tramp: Remote client connection
+  (use-package writegood-mode
+    :hook
+    ((text-mode . writegood-mode)
+    (org-mode . writegood-mode))
+    :custom-face
+    (writegood-weasels-face ((t (:box (:line-width 2 :color "magenta" :style released-button)))))
+    (writegood-passive-voice-face ((t (:box (:line-width 2 :color "cyan" :style released-button)))))
+    (writegood-duplicates-face ((t (:box (:line-width 2 :color "red" :style released-button))))))
+#+end_src
+
+** Tramp
+Remote file editing
+#+begin_src emacs-lisp :tangle yes
   (use-package tramp
     :config
     (setq tramp-default-method "ssh"))
 #+end_src
 
-** Terminal
+** Multi-Term
+Terminal emulator inside emacs
 #+begin_src emacs-lisp :tangle yes
-  ;; Multi-term: Terminal
+  (setenv "TERM" "xterm-256color")
   (use-package multi-term
-    :bind ("C-c t" . multi-term-dedicated-open)
-    :hook (term-mode . (lambda ()
-              (setq term-buffer-maximum-size 10000))))
-  ;;  :init
-  ;;  (add-hook 'term-mode-hook
-  ;;          (lambda ()
-  ;;            (setq term-buffer-maximum-size 10000))))
+    :bind ("C-c t" . multi-term)
+    :hook ((term-mode . (lambda ()
+              (setq term-buffer-maximum-size 10000)))
+           (term-mode . (lambda ()
+              (yas-minor-mode -1)))))
 #+end_src
 
 ** Searching

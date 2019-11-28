@@ -1,6 +1,5 @@
 #+TITLE: Programming
 #+AUTHOR: David Hedin
-#+EMAIL: david.hedin13@gmail.com
 
 * Programming Mode Settings
 General settings for programming in emacs
@@ -91,38 +90,42 @@ Specific autocomplete changes for C/C++
   ;;(setq company-backends (delete 'company-semantic company-backends))
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+  (use-package projectile)
+#+end_src
+
 *** RTags
 Uses rtags as a backend
 #+begin_src emacs-lisp :tangle yes
   ;; Rtags: C/C++ Indexing
-  (use-package rtags
-    :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
-    :bind (:map c-mode-base-map
-                ("M-." . rtags-find-symbol-at-point)
-                ("M-," . rtags-find-references-at-point)
-                ("M-/" . rtags-find-symbol))
-    :config
-    ; Add C-c r bindings
-    (rtags-enable-standard-keybindings)
-    ; Add helm as results backend, requires helm-rtags
-    (setq rtags-display-result-backend 'helm)
-    ; Start diagnostics to error checking and completions
-    (rtags-diagnostics)
-    (setq rtags-autostart-diagnostics t)
-    (setq rtags-completions-enabled t)
-    (push 'company-rtags company-backends))
+  ;; (use-package rtags
+  ;;   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
+  ;;   :bind (:map c-mode-base-map
+  ;;               ("M-." . rtags-find-symbol-at-point)
+  ;;               ("M-," . rtags-find-references-at-point)
+  ;;               ("M-/" . rtags-find-symbol))
+  ;;   :config
+  ;;   ; Add C-c r bindings
+  ;;   (rtags-enable-standard-keybindings)
+  ;;   ; Add helm as results backend, requires helm-rtags
+  ;;   (setq rtags-display-result-backend 'helm)
+  ;;   ; Start diagnostics to error checking and completions
+  ;;   (rtags-diagnostics)
+  ;;   (setq rtags-autostart-diagnostics t)
+  ;;   (setq rtags-completions-enabled t)
+  ;;   (push 'company-rtags company-backends))
 
-   ;; Use helm for rtags
-   (use-package helm-rtags)
+  ;;  ;; Use helm for rtags
+  ;;  (use-package helm-rtags)
 
-   ;; ;; Company backend from rtags
-   ;; (use-package company-rtags
-   ;;  :init
-   ;;  (setq rtags-completions-enabled t)
-   ;;  (add-to-list 'company-backends 'company-rtags))
+  ;;  ;; ;; Company backend from rtags
+  ;;  ;; (use-package company-rtags
+  ;;  ;;  :init
+  ;;  ;;  (setq rtags-completions-enabled t)
+  ;;  ;;  (add-to-list 'company-backends 'company-rtags))
 
-   ;; Flycheck backend from rtags
-   (use-package flycheck-rtags)
+  ;;  ;; Flycheck backend from rtags
+  ;;  (use-package flycheck-rtags)
 #+end_src
 
 * Syntax Checking
@@ -155,7 +158,7 @@ Uses flycheck
 
   ;; Fic-mode: Highlights FIXMEs and TODOs
   (use-package fic-mode
-    :hook (prog-mode . fic-mode))
+    :hook (c-mode . fic-mode))
     ;; :init
     ;; (add-hook 'prog-mode-hook 'fic-mode))
 #+end_src
@@ -189,4 +192,33 @@ Open .h files in C++ mode because that's usually what I'm using.
   (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 #+end_src
 
+#+begin_src emacs-lisp :tangle yes
+  (use-package ccls
+    :config
+    (setq ccls-executable "~/.emacs.d/lsp/ccls/build/ccls"))
+
+  (use-package company-lsp
+    :config
+    (push 'company-lsp company-backends))
+
+  (use-package lsp-ui
+    :hook ((lsp-mode . lsp-ui-mode)
+           (c++-mode-hook . lsp-ccls-enable)))
+#+end_src
+
+
 ** Clang format/tidy
+
+
+
+* LaTeX
+
+#+begin_src emacs-lisp :tangle yes
+;; LaTeX processing
+(use-package tex-mik
+  :ensure auctex
+  :init
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
+#+end_src

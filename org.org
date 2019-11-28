@@ -1,6 +1,5 @@
 #+TITLE: Org Config
 #+AUTHOR: David Hedin
-#+EMAIL: david.hedin13@gmail.com
 
 * Org
 
@@ -9,13 +8,12 @@ Org mode is big enough that it's going to get its own file
 (setq org-edit-src-content-indentation 0)
 #+begin_src emacs-lisp :tangle yes
   (use-package org
-    :hook ((org-mode . org-indent-mode)
-           (org-mode . visual-line-mode)
-           ; Display images inline after execution
-           (org-babel-after-execute . org-redisplay-inline-images))
+    :hook
+    ((org-mode . org-indent-mode)
+    (org-mode . visual-line-mode)
+    ; Display images inline after execution
+    (org-babel-after-execute . org-redisplay-inline-images))
     :config
-    ;; (add-hook 'org-mode-hook 'org-indent-mode)
-    ;; (add-hook 'org-mode-hook 'visual-line-mode)
     (setq org-log-done t
           org-directory "~/org"
           org-support-shift-select t
@@ -49,17 +47,18 @@ Org mode is big enough that it's going to get its own file
        (C . t)
        (ditaa . t)
        (python . t)
-       (sh . t)
+       ;(sh . t)
        (plantuml . t)
        (latex . t)))
     ; Disable confirm execute (Could be dangerous)
     (setq org-confirm-babel-evaluate nil)
     ; Add jar paths
-    (setq org-ditaa-jar-path
-          (expand-file-name "/usr/bin/ditaa"))
-    (setq org-plantuml-jar-path
-          (expand-file-name "/usr/share/plantuml/plantuml.jar"))
-    ;;  (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+    ;; (setq org-ditaa-jar-path
+    ;;       (expand-file-name "/usr/bin/ditaa"))
+    ;; (setq org-plantuml-jar-path
+    ;;       (expand-file-name "/usr/share/plantuml/plantuml.jar"))
+    ;; ;;  (
+    (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
     )
 #+end_src
 

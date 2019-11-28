@@ -1,6 +1,5 @@
 #+TITLE: Emacs Config
 #+AUTHOR: David Hedin
-#+EMAIL: david.hedin13@gmail.com
 
 * Config bootstrapping
 Bootstraps loading our emacs config from org files with babel src blocks.
@@ -15,7 +14,9 @@ We tangle then load separately because =org-babel-load-file= always tries to loa
   (org-babel-tangle-file
    (expand-file-name "init.org"
                      user-emacs-directory))
-  (load-file "/home/david/.emacs.d/package.el")
+  (load-file
+   (expand-file-name "package.el"
+                     user-emacs-directory))
 #+end_src
 
 ** Custom Variable File
@@ -48,7 +49,7 @@ Adds the package repos I use, then bootstrap =use-package=.
     (require 'use-package)
     (setq use-package-always-ensure t)
     ;; Only for testing init
-    (setq use-package-verbose t)
+    ; (setq use-package-verbose t)
 #+end_src
 
 * Config
