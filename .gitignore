@@ -1,0 +1,11 @@
+*~
+*.el
+!init.el
+/auto-save-list/
+/backups/
+/elpa/
+/emacs-*/
+/transient/
+/network-security.data
+.lsp-session*
+*.tar.gz
