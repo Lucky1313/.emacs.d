@@ -1,12 +1,16 @@
-#+TITLE: Emacs Config
+#+TITLE: Emacs Configuration
 #+AUTHOR: David Hedin
+#+SETUPFILE: ~/.emacs.d/org-theme.setup
 
-* Config bootstrapping
-Bootstraps loading our emacs config from org files with babel src blocks.
-The =(package-initialize)= is there because emacs requires this to be in your =init.el=.
-This tangles =init.org= (this file) which will replace =init.el= and create =package.el=.
-This ensures that this file and =init.el= are always in sync, but `init.el` has to exist for emacs to do this automatically.
-We tangle then load separately because =org-babel-load-file= always tries to load the file with the same name (i.e. =init.el=) and we would be in a recursive loop.
+* Org Mode Configuration Bootstrapping
+Following the idea of literate programming, my emacs configuration is written in Org mode.
+Org supports converting source code blocks to complete files (called 'tangling') that can then be interpreted by Emacs as configuration files.
+We need only a very simple =init.el= file that can then chain tangling and loading the rest of the configuration from the other Org files.
+Unfortunately it does mean that the =init.el= has to exist before we can do all this automatically.
+The =init.org= parts of this file still get tangled into the =init.el=, replacing it, so they are kept in sync.
+
+* Initial Bootstrap
+The `(package-initialize)` is here because emacs requires this to be in your =init.el=.
 
 #+begin_src emacs-lisp :tangle init.el
   (package-initialize)
@@ -19,12 +23,12 @@ We tangle then load separately because =org-babel-load-file= always tries to loa
                      user-emacs-directory))
 #+end_src
 
-** Custom Variable File
+* Custom Variable File
 This moves all custom set variables to their own file instead of adding them to =init.el=.
-This has the nice property of not wiping these out if/when we tangle these codeblocks to =init.el=, and generally keeps things cleaner
+This has the nice property of not wiping these out if/when we tangle these codeblocks to =init.el=, and generally keeps things cleaner.
 The =:noerror= prevents emacs from complaining if =custom.el= does not exist not already.
 It will automatically be made once there are custom variables that need saving.
-[[file:custom.el][Custom]]
+
 #+begin_src emacs-lisp :tangle init.el
   (setq custom-file
         (expand-file-name "custom.el"
@@ -32,16 +36,15 @@ It will automatically be made once there are custom variables that need saving.
   (load custom-file :noerror)
 #+end_src
 
-** Package Manager
-Adds the package repos I use, then bootstrap =use-package=.
+* Package Manager
+This adds in package repositories available for Emacs, the boostraps loading the =use-package= package that is used for the rest of the package loading.
+=use-package= has a nice =use-package-always-ensure= that saves having to type =:ensure t= on every package we want automatically installed (which is all of them).
 
 #+begin_src emacs-lisp :tangle package.el
     (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                              ("marmalade" . "http://marmalade-repo.org/packages/")
                              ("melpa" . "http://melpa.milkbox.net/packages/")
                              ("org" . "https://orgmode.org/elpa/")))
-    ;;(package-initialize)
-    ;;(setq package-enable-at-startup nil)
 
     (unless (package-installed-p 'use-package)
       (package-refresh-contents)
@@ -52,33 +55,46 @@ Adds the package repos I use, then bootstrap =use-package=.
     ; (setq use-package-verbose t)
 #+end_src
 
-* Config
-The rest of the configuration is split into multiple files.
-
-- [[file:editor.org][Editor]]: General changes to the editor
-- [[file:org.org][Org]]: All org-mode related changes
-- [[file:programming.org][Programming]]: Settings for specific programming modes
-- [[file:templates.org][Templates]]: Templates and snippets
-
+* Editor Configuration
+General configuration of the emacs editor is [[file:editor.org][here]].
 
 #+begin_src emacs-lisp :tangle init.el
   (org-babel-load-file
    (expand-file-name "editor.org"
                      user-emacs-directory))
+#+end_src
+
+* Org Configuration
+Org is big enough that it gets its own configuration file [[file:org.org][here]].
+
+#+begin_src emacs-lisp :tangle init.el
   (org-babel-load-file
    (expand-file-name "org.org"
                      user-emacs-directory))
+#+end_src
+
+* Programming Configuration
+Configuration for programming and language specific packages is [[file:programming.org][here]].
+
+#+begin_src emacs-lisp :tangle init.el
   (org-babel-load-file
    (expand-file-name "programming.org"
                      user-emacs-directory))
+#+end_src
+
+* Templates Configuration
+All extra configuration for templates and snippets is [[file:templates.org][here]].
+
+#+begin_src emacs-lisp :tangle init.el
   (org-babel-load-file
    (expand-file-name "templates.org"
                      user-emacs-directory))
 #+end_src
 
 * Running Emacs
-My preferred way to have emacs function is that when no emacs server is running, a new emacs server should be started, but if a server already exists, only a new frame should be created.
-This has the functionality that once I have emacs open somewhere, opening new frames is quick and cheap, but when I close all eamcs frames, the emacs server shuts down completely.
+Emacs runs as a user systemd service on my machine.
+This has the functionality that opening new frames is quick and cheap, but when I close all emacs frames, the emacs server shuts down completely, clearing all open buffers and generally reducing bloat.
+My emacs service is configured to automatically restart after closing, so by the time I need another frame, the emacs server has restarted.
 
 #+begin_src emacs-lisp :tangle init.el
   (defun custom/last-frame-kill(frame)
@@ -89,9 +105,9 @@ This has the functionality that once I have emacs open somewhere, opening new fr
   (add-to-list 'delete-frame-functions 'custom/last-frame-kill)
 #+end_src
 
-Emacs needs to be launched using this command
+Emacs needs to be launched using this command:
 #+begin_src sh :tangle no
-emacsclient --alternate-editor="" 
+emacsclient -c -a "emacs"
 #+end_src
 
 * To Do List

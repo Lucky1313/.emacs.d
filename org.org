@@ -1,5 +1,6 @@
 #+TITLE: Org Config
 #+AUTHOR: David Hedin
+#+SETUPFILE: ~/.emacs.d/org-theme.setup
 
 * Org
 
@@ -40,25 +41,31 @@ Org mode is big enough that it's going to get its own file
             ("WAITING" :foreground "orange" :weight bold)
             ("HOLD" :foreground "magenta" :weight bold)
             ("CANCELLED" :foreground "forest green" :weight bold)))
+    (setq org-publish-project-alist
+    '(("emacs-config"
+      :base-directory "~/.emacs.d"
+      :base-extension "org"
+      :publishing-directory "~/.emacs.d/publish/"
+      :recursive nil
+      :publishing-function org-html-publish-to-html
+      )))
     ;; Ditaa Drawing in Org
     (org-babel-do-load-languages
      'org-babel-load-languages
-     '((emacs-lisp . t)
-       (C . t)
-       (ditaa . t)
-       (python . t)
-       ;(sh . t)
-       (plantuml . t)
-       (latex . t)))
+     '((C . t)
+     (emacs-lisp . t)
+     (latex . t)
+     (python . t)
+     (shell . t)))
     ; Disable confirm execute (Could be dangerous)
     (setq org-confirm-babel-evaluate nil)
-    ; Add jar paths
-    ;; (setq org-ditaa-jar-path
-    ;;       (expand-file-name "/usr/bin/ditaa"))
-    ;; (setq org-plantuml-jar-path
-    ;;       (expand-file-name "/usr/share/plantuml/plantuml.jar"))
-    ;; ;;  (
     (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
     )
 #+end_src
 
+* Publishing org projects
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package htmlize) ;; HTML exporter
+  (use-package ox-gfm) ;; GFM exporter
+#+end_src

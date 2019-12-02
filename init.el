@@ -15,12 +15,15 @@
 (org-babel-load-file
  (expand-file-name "editor.org"
                    user-emacs-directory))
+
 (org-babel-load-file
  (expand-file-name "org.org"
                    user-emacs-directory))
+
 (org-babel-load-file
  (expand-file-name "programming.org"
                    user-emacs-directory))
+
 (org-babel-load-file
  (expand-file-name "templates.org"
                    user-emacs-directory))

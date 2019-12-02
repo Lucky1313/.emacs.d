@@ -1,5 +1,6 @@
 #+TITLE: Editor
 #+AUTHOR: David Hedin
+#+SETUPFILE: ~/.emacs.d/org-theme.setup
 
 * Theme
 #+begin_src emacs-lisp :tangle yes
@@ -16,44 +17,43 @@ Changes backup files location from the directory the original file is in to all 
 #+end_src
 
 * Emacs Settings
-Revert files if they are changed by another program
+** Automatically revert externally changed files
 #+begin_src emacs-lisp :tangle yes
   (global-auto-revert-mode t)
 #+end_src
 
-Change yes/no to y/n
+** Change yes/no to y/n
 #+begin_src emacs-lisp :tangle yes
   (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-Enable local elisp eval
+** Enable local elisp eval
 #+begin_src emacs-lisp :tangle yes
   (setq enable-local-eval 't)
 #+end_src
 
-Delete highlighted text when typing
+** Delete highlighted text when typing
 #+begin_src emacs-lisp :tangle yes
   (delete-selection-mode t)
   (transient-mark-mode t)
 #+end_src
 
-Tab width
+** Tab width changes
 #+begin_src emacs-lisp :tangle yes
   (setq-default tab-width 2
                 indent-tabs-mode nil)
   (setq indent-line-function 'insert-tab)
 #+end_src
 
-Word wrap in text mode
+** Word wrap in text mode
 #+begin_src emacs-lisp :tangle yes
   (add-hook 'text-mode-hook 'visual-line-mode)
 #+end_src
 
-Show matching parentheses
+** Show matching parentheses
 #+begin_src emacs-lisp :tangle yes
   (show-paren-mode t)
 #+end_src
-
 
 * Bookmarks
 Easy bookmark access using =<f9>=.
@@ -72,20 +72,20 @@ No toolbar, menubar, tooltip, scroll bar, or startup screen.
   (setq inhibit-startup-screen t)
 #+end_src
 
-Show line numbers everywhere
+Show line numbers everywhere.
 #+begin_src emacs-lisp :tangle yes
   (global-linum-mode 1)
 #+end_src
 
 ** Mode Line
-Display current time and current cursor column number in mode line
+Display current time and cursor column number in mode line.
 #+begin_src emacs-lisp :tangle yes
   (display-time-mode 1)
   (column-number-mode 1)
 #+end_src
 
 Use the =smart-mode-line= package.
-I don't like the original color scheme, so I changed it to use the colors org would use
+I don't like the original color scheme, so I changed it to use the colors org uses.
 #+begin_src emacs-lisp :tangle yes
   (use-package smart-mode-line-powerline-theme)
   (use-package smart-mode-line
@@ -115,8 +115,9 @@ I don't like the original color scheme, so I changed it to use the colors org wo
 #+end_src
 
 * Common Packages
-These are common packages that are used by me everywhere in emacs
+These are common packages that are used everywhere in Emacs.
 ** Helm
+Much better listing of mini-buffer choices.
 #+begin_src emacs-lisp :tangle yes
   (use-package helm
     :bind (("M-x" . helm-M-x)
@@ -124,28 +125,30 @@ These are common packages that are used by me everywhere in emacs
            ("C-x C-f" . helm-find-files)
            ("C-x b" . helm-buffers-list)
            :map helm-find-files-map
-           ("C-s" . helm-ff-run-grep-ag))
+           ("C-s" . helm-ff-run-grep-ag)) ;; Search for string in files in directory
     :init
     (helm-mode 1)
     :config
     (helm-autoresize-mode 1)
     (setq helm-autoresize-max-height 30)
-    (setq helm-autoresize-min-height 20)
-    (setq helm-split-window-in-side-p t))
+    (setq helm-autoresize-min-height 15)
+    (setq helm-split-window-in-side-p t)
+    :custom
+    (helm-ff-lynx-style-map t)) ;; Allow arrow key navigation in ff buffer
 #+end_src
 
 ** Helm Swoop
-Better in file searching, press the shortcut again to swoop all files
+Better in-file searching, press the shortcut again to swoop all buffers in the same mode as the current one.
 #+begin_src emacs-lisp :tangle yes
   (use-package helm-swoop
     :bind (("M-s" . helm-swoop-without-pre-input)
            :map isearch-mode-map
-           ("M-s" . helm-swoop-from-isearch)
+           ("M-s" . helm-swoop-from-isearch) ;; Pop from isearch into swoop
            :map helm-swoop-map
-           ("M-s" . helm-multi-swoop-current-mode-from-helm-swoop))
+           ("M-s" . helm-multi-swoop-current-mode-from-helm-swoop)) ;; Swoop all buffers in same mode
     :config
     (setq helm-swoop-split-with-multiple-windows t))
-    ;;(setq helm-swoop-use-fuzzy-match t))
+    ;;(setq helm-swoop-use-fuzzy-match t)) ;; Fuzzy matching of search string
 #+end_src
 
 ** Undo Tree
@@ -159,7 +162,7 @@ Visualize undos with a tree, replace normal emacs undo.
 #+end_src
 
 ** Auto Highlighting
-Highlights the item under the cursor
+Highlights the item under the cursor.
 #+begin_src emacs-lisp :tangle yes
   (use-package auto-highlight-symbol
     :hook 
@@ -177,7 +180,7 @@ Auto pair parentheses, brackets, and quotes.
 #+end_src
 
 ** Multiple Cursors
-Crete multiple cursors for editing multiple lines at the same time
+Crete multiple cursors for editing multiple lines at the same time.
 #+begin_src emacs-lisp :tangle yes
   (use-package multiple-cursors
     :ensure t
@@ -187,7 +190,7 @@ Crete multiple cursors for editing multiple lines at the same time
 #+end_src
 
 ** Flyspell
-Automatic spell checking
+Automatic spell checking.
 #+begin_src emacs-lisp :tangle yes
   (use-package flyspell
     :hook
@@ -205,9 +208,8 @@ Automatic spell checking
                 ("C-," . custom/flyspell-next-word)))
 #+end_src
 
-
 ** Writegood
-Mode that looks for weasel words and passive voice
+Mode that looks for weasel words, passive voice, and duplicate words.
 #+begin_src emacs-lisp :tangle yes
   (use-package writegood-mode
     :hook
@@ -220,7 +222,7 @@ Mode that looks for weasel words and passive voice
 #+end_src
 
 ** Tramp
-Remote file editing
+Remote file editing.
 #+begin_src emacs-lisp :tangle yes
   (use-package tramp
     :config
@@ -228,7 +230,7 @@ Remote file editing
 #+end_src
 
 ** Multi-Term
-Terminal emulator inside emacs
+Terminal emulator inside emacs.
 #+begin_src emacs-lisp :tangle yes
   (setenv "TERM" "xterm-256color")
   (use-package multi-term
@@ -239,19 +241,9 @@ Terminal emulator inside emacs
               (yas-minor-mode -1)))))
 #+end_src
 
-** Searching
-#+begin_src emacs-lisp :tangle yes
-  (use-package helm-ag)
-  ;; Needs more configuration https://github.com/syohex/emacs-helm-ag
-#+end_src
-
-** Howdoi
-Search stackoverflow for top answer from query
-#+begin_src emacs-lisp :tangle yes
-  (use-package howdoi)
-#+end_src
-
-** Cut line if nothing is selected
+* Custom Functions
+** Better text kill
+Override normal cut to take the whole line if nothing is selected.
 #+begin_src emacs-lisp :tangle yes
   ; From http://ergoemacs.org/emacs/emacs_copy_cut_current_line.html
   (defun custom/kill-text-dwim ()

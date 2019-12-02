@@ -1,9 +1,11 @@
+#+SETUPFILE: ~/.emacs.d/org-theme.setup
+
+
 * C++ Autocomplete
 * Project Management
 * Python mode changes
 * Yasnippets
 * File skeletons
-* Helm swoop, change from fuzzy mode or not
 * Org capture
 * Debugging support
 * Wrap nearby symbol with quotes or parens

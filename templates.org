@@ -1,4 +1,6 @@
 
+#+SETUPFILE: ~/.emacs.d/org-theme.setup
+
 * Yasnippet
 
 #+begin_src emacs-lisp :tangle yes
