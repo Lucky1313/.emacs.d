@@ -55,10 +55,15 @@ Changes backup files location from the directory the original file is in to all 
   (show-paren-mode t)
 #+end_src
 
-* Bookmarks
+* Keybindings
 Easy bookmark access using =<f9>=.
 #+begin_src emacs-lisp :tangle yes
   (global-set-key (kbd "<f9>") 'list-bookmarks)
+#+end_src
+
+Delete up to the last non whitespace character.
+#+begin_src emacs-lisp :tangle yes
+  (global-set-key (kbd "M-<backspace>") 'delete-indentation)
 #+end_src
 
 * Window Configuration

@@ -35,7 +35,8 @@ Sets up language server for Emacs.
 #+begin_src emacs-lisp :tangle yes
   (use-package lsp-mode
     :hook
-    (-mode . lsp)
+    ((rust-mode . lsp)
+    (c-mode . lsp))
     :commands lsp)
 
   (use-package lsp-ui
@@ -46,7 +47,6 @@ Sets up language server for Emacs.
 
 * Autocomplete
 Use company for autocompletion.
-
 #+begin_src emacs-lisp :tangle yes
   (use-package company
     :init
@@ -54,18 +54,25 @@ Use company for autocompletion.
     :config
     (setq company-idle-delay 0.1)
     (setq company-minimum-prefix-length 2))
+#+end_src
 
-  ;; Company-Statistics: Suggest most used completions first
+Company statistics puts more used completions first
+#+begin_src emacs-lisp :tangle yes
   (use-package company-statistics
     :hook (company-mode . company-statistics-mode))
+#+end_src
 
-  ;; Company-Quickhelp: Add information about completions
+Company quickhelp shows docs about the currently selected completion candidate.
+#+begin_src emacs-lisp :tangle yes
   (use-package company-quickhelp
     :hook (company-mode . company-quickhelp-mode)
     :config
     (setq company-quickhelp-delay 0)
     (setq company-quickhelp-use-propertized-text t))
+#+end_src
 
+Company integration with LSP.
+#+begin_src emacs-lisp :tangle yes
   (use-package company-lsp
     :config
     (push 'company-lsp company-backends)
@@ -112,8 +119,6 @@ Mode packages that don't require configuration.
     :mode (("README\\.md\\'" . gfm-mode)
            ("\\.md\\'" . gfm-mode)
            ("\\.markdown\\'" . markdown-mode)))
-  (use-package rust-mode
-    :mode "\\.rs\\'")
   (use-package syslog-mode
     :mode "/var/log.*\\'")
   (use-package systemd
@@ -183,3 +188,30 @@ Highlight newer C++ standards language
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode))
 #+end_src
+
+* Rust
+
+Rust mode setup, automatically run rustfmt on save.
+#+begin_src emacs-lisp :tangle yes
+  (use-package rust-mode
+    :mode "\\.rs\\'"
+    :config
+    (setq rust-format-on-save t))
+#+end_src
+
+Rust's compilation model doesn't play nice with Flycheck by default, this package solves it.
+#+begin_src emacs-lisp :tangle yes
+  (use-package flycheck-rust
+    :hook (rust-mode . flycheck-rust-setup))
+#+end_src
+
+Emacs control of rust's package and build system, cargo.
+#+begin_src emacs-lisp :tangle yes
+  (use-package cargo
+    ;; :hook (rust-mode . cargo-minor-mode)
+    :bind (:map rust-mode-map
+                ("<f10>" . cargo-process-build)
+                ("<f11>" . cargo-process-test)
+                ("<f12>" . cargo-process-run)))
+#+end_src
+ 

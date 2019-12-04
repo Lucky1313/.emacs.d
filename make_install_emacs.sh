@@ -8,7 +8,8 @@ NPROC=`nproc`
 VERSION=26.3
 
 # Dependencies
-sudo apt build-dep emacs
+sudo apt install debhelper
+# Extra dependencies for optional modules
 sudo apt install libwebkit2gtk-4.0-dev libjpeg-dev libpng-dev libtiff-dev
 
 # Retrieve emacs
