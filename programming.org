@@ -191,12 +191,31 @@ Highlight newer C++ standards language
 
 * Rust
 
+** New Computer Setup
+`rustup` is the tool for managing Rust versions.
+#+begin_src shell :tangle no
+  curl https://sh.rustup.rs -sSf | sh
+#+end_src
+
+Will require a login to have the rust binaries added to `PATH` by default.
+
+Tools for LSP integration.
+#+begin_src shell :tangle no
+  rustup component add rls rust-analysis rust-src
+#+end_src
+
+** Emacs Config
 Rust mode setup, automatically run rustfmt on save.
 #+begin_src emacs-lisp :tangle yes
   (use-package rust-mode
     :mode "\\.rs\\'"
+    :bind (:map rust-mode-map
+                ("<f10>" . rust-build)
+                ("<f11>" . rust-test)
+                ("<f12>" . rust-run))
     :config
-    (setq rust-format-on-save t))
+    (setq rust-format-on-save t)
+    (setq rust-rustfmt-bin "~/.cargo/bin/rustfmt"))
 #+end_src
 
 Rust's compilation model doesn't play nice with Flycheck by default, this package solves it.
@@ -207,11 +226,11 @@ Rust's compilation model doesn't play nice with Flycheck by default, this packag
 
 Emacs control of rust's package and build system, cargo.
 #+begin_src emacs-lisp :tangle yes
-  (use-package cargo
-    ;; :hook (rust-mode . cargo-minor-mode)
-    :bind (:map rust-mode-map
-                ("<f10>" . cargo-process-build)
-                ("<f11>" . cargo-process-test)
-                ("<f12>" . cargo-process-run)))
+  ;; (use-package cargo
+  ;;   :hook (rust-mode . cargo-minor-mode)
+  ;;   :bind (:map rust-mode-map
+  ;;               ("<f10>" . cargo-process-build)
+  ;;               ("<f11>" . cargo-process-test)
+  ;;               ("<f12>" . cargo-process-run)))
 #+end_src
  
