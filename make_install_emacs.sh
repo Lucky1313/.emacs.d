@@ -5,10 +5,10 @@ set -x
 
 NPROC=`nproc`
 
-VERSION=26.3
+VERSION=27.0.90
 
 # Dependencies
-sudo apt install debhelper
+sudo apt install debhelper texinfo libxpm-dev libgif-dev gnutls-dev libtinfo-dev
 # Extra dependencies for optional modules
 sudo apt install libwebkit2gtk-4.0-dev libjpeg-dev libpng-dev libtiff-dev
 

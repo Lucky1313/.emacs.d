@@ -31,18 +31,26 @@ Initial flycheck setup.
 
 * Language Server
 Sets up language server for Emacs.
+Uses some configuration suggestions from [[here][https://github.com/emacs-lsp/lsp-mode#performance]] for better performance.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package lsp-mode
     :hook
     ((rust-mode . lsp)
     (c-mode . lsp))
-    :commands lsp)
+    :commands lsp
+    :config
+    (setq gc-cons-threshold (* 100 1024 1024)) ; 100Mb
+    (setq read-process-output-max (* 1 1024 1024)) ; 1 Mb
+    (setq lsp-idle-delay 0.5))
 
   (use-package lsp-ui
     :hook
     (lsp-mode . lsp-ui-mode)
     :commands lsp-ui-mode)
+
+  (use-package helm-lsp
+    :commands help-lsp-workspace-symbol)
 #+end_src
 
 * Autocomplete
@@ -95,6 +103,9 @@ FIC mode highlights =TODO= and =FIXME= in comments.
   ;; Magit: Git control
   (use-package magit
     :bind ("C-c g" . magit-status))
+
+  ;; Magit LFS support
+  (use-package magit-lfs)
 #+end_src
 
 * General Mode Settings
@@ -108,6 +119,8 @@ Mode packages that don't require configuration.
     :mode "\\.csv\\'")
   (use-package cuda-mode
     :mode "\\.cu\\'")
+  (use-package dockerfile-mode
+    :mode "Dockerfile\\'")
   (use-package glsl-mode
     :mode ("\\.vert\\'" "\\.frag\\'" "\\.glsl\\'" "\\.geom\\'"))
   (use-package json-mode

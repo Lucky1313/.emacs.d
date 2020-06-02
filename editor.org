@@ -223,7 +223,9 @@ Mode that looks for weasel words, passive voice, and duplicate words.
     :custom-face
     (writegood-weasels-face ((t (:box (:line-width 2 :color "magenta" :style released-button)))))
     (writegood-passive-voice-face ((t (:box (:line-width 2 :color "cyan" :style released-button)))))
-    (writegood-duplicates-face ((t (:box (:line-width 2 :color "red" :style released-button))))))
+    (writegood-duplicates-face ((t (:box (:line-width 2 :color "red" :style released-button)))))
+    :config
+    (remove-hook 'yaml-mode-hook 'writegood-mode t))
 #+end_src
 
 ** Tramp
