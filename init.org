@@ -43,7 +43,7 @@ This adds in package repositories available for Emacs, the boostraps loading the
 #+begin_src emacs-lisp :tangle package.el
     (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                              ("marmalade" . "http://marmalade-repo.org/packages/")
-                             ("melpa" . "http://melpa.milkbox.net/packages/")
+                             ("melpa" . "https://melpa.org/packages/")
                              ("org" . "https://orgmode.org/elpa/")))
 
     (unless (package-installed-p 'use-package)

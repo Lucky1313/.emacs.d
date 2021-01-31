@@ -61,6 +61,16 @@ Easy bookmark access using =<f9>=.
   (global-set-key (kbd "<f9>") 'list-bookmarks)
 #+end_src
 
+Start a new terminal in the directory of the current buffer
+#+begin_src emacs-lisp :tangle yes
+  (defun term-here ()
+    (interactive)
+    (start-process "" nil "gnome-terminal"))
+
+  ;; (global-set-key (kbd "<f10>") 'term-here)
+#+end_src
+
+
 Delete up to the last non whitespace character.
 #+begin_src emacs-lisp :tangle yes
   (global-set-key (kbd "M-<backspace>") 'delete-indentation)
@@ -225,7 +235,9 @@ Mode that looks for weasel words, passive voice, and duplicate words.
     (writegood-passive-voice-face ((t (:box (:line-width 2 :color "cyan" :style released-button)))))
     (writegood-duplicates-face ((t (:box (:line-width 2 :color "red" :style released-button)))))
     :config
-    (remove-hook 'yaml-mode-hook 'writegood-mode t))
+    (remove-hook 'yaml-mode-hook 'writegood-mode t)
+    (remove-hook 'xml-mode-hook 'writegood-mode t)
+    (remove-hook 'latex-mode-hook 'writegood-mode t))
 #+end_src
 
 ** Tramp
@@ -236,17 +248,28 @@ Remote file editing.
     (setq tramp-default-method "ssh"))
 #+end_src
 
-** Multi-Term
-Terminal emulator inside emacs.
+# ** Multi-Term
+# Terminal emulator inside emacs.
+# #+begin_src emacs-lisp :tangle yes
+#   (setenv "TERM" "xterm-256color")
+#   (use-package multi-term
+#     :bind ("C-c t" . multi-term)
+#     :hook ((term-mode . (lambda ()
+#               (setq term-buffer-maximum-size 10000)))
+#            (term-mode . (lambda ()
+#               (yas-minor-mode -1)))))
+# #+end_src
+
+** VTerm
+Terminal emulator
 #+begin_src emacs-lisp :tangle yes
-  (setenv "TERM" "xterm-256color")
-  (use-package multi-term
-    :bind ("C-c t" . multi-term)
-    :hook ((term-mode . (lambda ()
-              (setq term-buffer-maximum-size 10000)))
-           (term-mode . (lambda ()
-              (yas-minor-mode -1)))))
+  (use-package vterm
+    :bind ("C-c t" . vterm)
+    :init
+    (setq vterm-module-cmake-args "-DUSE_SYSTEM_LIBVTERM=no"))
 #+end_src
+
+
 
 * Custom Functions
 ** Better text kill
