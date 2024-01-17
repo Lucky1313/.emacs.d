@@ -1,3 +1,27 @@
+
+# New
+
+* Vertico-buffer should auto-resize
+* Use consult to duplicate helm-swoop functionality
+* Go through consult extra packages: https://github.com/minad/consult#auxiliary-packages
+* git-timemachine
+* hydra?
+* alchemist?
+* pdf-tools
+* https://github.com/dgutov/diff-hl or https://ianyepan.github.io/posts/emacs-git-gutter/
+* https://github.com/nex3/perspective-el
+* https://github.com/dgutov/mmm-mode
+* restart-emacs
+* blackout vs smart modeline
+* string-inflection
+* code formatting via apheleia
+
+* gitignore-templates.el or yasnippet?
+
+https://github.com/caisah/emacs.dz
+
+# Old
+
 * C++ Autocomplete
 * Project Management
 * Python mode changes
@@ -7,15 +31,12 @@
 * Org capture
 * Debugging support
 * Wrap nearby symbol with quotes or parens
-
 * visual regexp steroids
 * whitespace mode 
 * dimmer
 * hungry delete
-* string inflection
 * tiny
 * smartparens
-* aggressive indent mode
 * indent guide
 * symon
 * docker
@@ -29,4 +50,4 @@ https://www.emacswiki.org/emacs/move-text.el
 (global-set-key (kbd "C-x K") 'kill-buffer)
 * cycle-spacing
 * company-math
-https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
+  https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
